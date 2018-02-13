@@ -1,5 +1,4 @@
-import {format} from './utils'
-const Sparkline = require('../site/sparkline')
+const formatDecimalPoints = require('./utils')
 class StockData {
   constructor () {
     this.currencyPairs = []
@@ -23,27 +22,29 @@ class StockData {
   }
 
   updateMidPrices (data) {
-    let currencies = this.currencyPairs.filter(pair => pair.name === data.name)
-    if (currencies.length > 0) {
-      if (!currencies[0].midPrices) {
-        currencies[0].midPrices = []
+    let currencyPair = this.currencyPairs.filter(pair => pair.name === data.name)
+    if (currencyPair.length > 0) {
+      if (!currencyPair[0].midPrices) {
+        currencyPair[0].midPrices = []
       }
-      currencies[0].midPrices.push((data.bestAsk + data.bestBid) / 2)
+      const newMidPrice = (data.bestAsk + data.bestBid) / 2
+      currencyPair[0].midPrices = [...(currencyPair[0].midPrices.slice(-(30 - 1))), newMidPrice]
+      // currencies[0].midPrices.push((data.bestAsk + data.bestBid) / 2)
     }
   }
 
   updateElement (currencyData) {
-    return `<td >${format(currencyData.name)}</td> 
-    <td>${format(currencyData.bestBid)}</td>
-    <td>${format(currencyData.bestAsk)}</td>
-    <td>${format(currencyData.openBid)}</td>
-    <td>${format(currencyData.openAsk)}</td>
-    <td>${format(currencyData.lastChangeBid)}</td>
-    <td>${format(currencyData.lastChangeAsk)}</td>
+    return `<td>${currencyData.name}</td>
+    <td>${formatDecimalPoints(currencyData.bestBid)}</td>
+    <td>${formatDecimalPoints(currencyData.bestAsk)}</td>
+    <td>${formatDecimalPoints(currencyData.openBid)}</td>
+    <td>${formatDecimalPoints(currencyData.openAsk)}</td>
+    <td>${formatDecimalPoints(currencyData.lastChangeBid)}</td>
+    <td>${formatDecimalPoints(currencyData.lastChangeAsk)}</td>
     <td><span id='sparkLine_${currencyData.name}'></span></td>`
   }
 
-isNewCurrency (currencyData) {
+  isNewCurrency (currencyData) {
     return this.currencyPairs.length == 0 || this.currencyPairs.filter(pair => pair.name === currencyData.name).length == 0
   }
 }
