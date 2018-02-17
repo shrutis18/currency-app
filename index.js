@@ -31,7 +31,7 @@ function connectCallback () {
   client.subscribe('/fx/prices', function (response) {
     if (response.body) {
       let data = JSON.parse(response.body)
-      stockData.populateTableRow(data, renderingElement)
+      stockData.render(data, renderingElement)
       stockData.currencyPairs.forEach(function (currencyPair) {
         Sparkline.draw(this.document.getElementById('sparkLine_' + currencyPair.name), currencyPair.midPrices, { width: 250 })
       })

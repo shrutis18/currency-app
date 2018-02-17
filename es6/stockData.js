@@ -1,9 +1,11 @@
-const formatDecimalPoints = require('./utils')
+const CurrencyPairElement = require('./currencyPairElement')
 class StockData {
   constructor () {
     this.currencyPairs = []
   }
-  populateTableRow (data, table) {
+
+  render (data, table) {
+    this.currencyPairElement = new CurrencyPairElement(table)
     this.updateCurrencyPairs(data, table)
   }
 
@@ -15,43 +17,28 @@ class StockData {
     return this.currencyPairs.filter(pair => pair.name !== data.name)
   }
 
-  updateCurrencyPairs (newCurrencyPair, table) {
+  updateCurrencyPairs (newCurrencyPair) {
     let oldCurrencyPair = this.getCurrencyPairByName(newCurrencyPair.name)
     if (oldCurrencyPair) {
       this.currencyPairs = this.removeCurrencyPair(oldCurrencyPair)
-      table.removeChild(document.getElementById(oldCurrencyPair.name))
+      this.currencyPairElement.removeElement(oldCurrencyPair)
       newCurrencyPair.midPrices = oldCurrencyPair.midPrices
     }
-    let indexToBeAttachedBefore = this.calculateAttachingIndexForNewCurrencyPair(newCurrencyPair)
-    this.updateTableRow(table, newCurrencyPair, indexToBeAttachedBefore)
-
+    this.attachCurrencyPairToDom(newCurrencyPair)
     this.currencyPairs.push(newCurrencyPair)
     this.updateMidPrices(newCurrencyPair)
     this.sortCurrencyPairs()
   }
 
-  sortCurrencyPairs () {
-    this.currencyPairs.sort(function (a, b) {
-      if (a.lastChangeBid >= b.lastChangeBid) {
-        return -1
-      } else {
-        return 1
-      }
-    })
-  }
-  updateTableRow (table, data, indexToBeAttachedBefore) {
-    if (indexToBeAttachedBefore === -1) {
-      table.append(this.createRow(data))
-    } else {
-      table.insertBefore(this.createRow(data), table.children[indexToBeAttachedBefore])
-    }
+  attachCurrencyPairToDom (newCurrencyPair) {
+    let indexToBeAttachedBefore = this.calculateAttachingIndexForNewCurrencyPair(newCurrencyPair)
+    this.currencyPairElement.updateTableRow(newCurrencyPair, indexToBeAttachedBefore)
   }
 
-  createRow (currencyData) {
-    let row = document.createElement('tr')
-    row.setAttribute('id', currencyData.name)
-    row.innerHTML = this.createRowData(currencyData)
-    return row
+  sortCurrencyPairs () {
+    this.currencyPairs.sort((pair1, pair2) => {
+      return (pair1.lastChangeBid >= pair2.lastChangeBid) ? -1 : 1
+    })
   }
 
   updateMidPrices (data) {
@@ -65,23 +52,12 @@ class StockData {
     }
   }
 
-  createRowData (currencyData) {
-    return `<td>${currencyData.name}</td>
-    <td>${formatDecimalPoints(currencyData.bestBid)}</td>
-    <td>${formatDecimalPoints(currencyData.bestAsk)}</td>
-    <td>${formatDecimalPoints(currencyData.openBid)}</td>
-    <td>${formatDecimalPoints(currencyData.openAsk)}</td>
-    <td>${formatDecimalPoints(currencyData.lastChangeBid)}</td>
-    <td>${formatDecimalPoints(currencyData.lastChangeAsk)}</td>
-    <td><span id='sparkLine_${currencyData.name}'></span></td>`
-  }
-
-  isNewCurrency (currencyData) {
+  isNewCurrencyPair (currencyData) {
     return this.currencyPairs.length === 0 || this.currencyPairs.filter(pair => pair.name === currencyData.name).length === 0
   }
 
-  calculateAttachingIndexForNewCurrencyPair (data) {
-    return this.currencyPairs.findIndex(pair => pair.lastChangeBid <= data.lastChangeBid)
+  calculateAttachingIndexForNewCurrencyPair (currencyPair) {
+    return this.currencyPairs.findIndex(pair => pair.lastChangeBid <= currencyPair.lastChangeBid)
   }
 }
 module.exports = StockData
