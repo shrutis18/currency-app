@@ -35,7 +35,7 @@ function connectCallback () {
       stockData.currencyPairs.forEach(function (currencyPair) {
         Sparkline.draw(this.document.getElementById('sparkLine_' + currencyPair.name), currencyPair.midPrices, { width: 250 })
       })
-    }
+    } else renderingElement.innerHTML = '<p>Network Connection lost !!</p>'
   })
 }
 

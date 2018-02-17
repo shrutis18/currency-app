@@ -31,7 +31,7 @@ describe('#stockData', () => {
         // given
     let stockData = new StockData()
         // when
-    let actual = stockData.createNewElement(data)
+    let actual = stockData.createRow(data)
         // then
     expect(actual.innerHTML).to.be.equal(rowElement)
   })
@@ -39,7 +39,7 @@ describe('#stockData', () => {
    it('should be able to update the element', () => {
     // given
      let stockData = new StockData()
-     let rowElement = stockData.createNewElement(data)
+     let rowElement = stockData.createRow(data)
      document.body.appendChild(rowElement)
      const updatedElement =
      `<td>eurjpy</td>
@@ -61,7 +61,7 @@ describe('#stockData', () => {
        lastChangeAsk: -0.3452897
      }
      // when
-     document.getElementById(data.name).innerHTML = stockData.updateElement(updatedData)
+     document.getElementById(data.name).innerHTML = stockData.createRowData(updatedData)
      // then
      expect(document.getElementById(data.name).innerHTML).to.be.equal(updatedElement)
    })
