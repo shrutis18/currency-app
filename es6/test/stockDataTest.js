@@ -64,15 +64,12 @@ describe('#stockData', () => {
         while (i <= 30) {
           currencyPair.midPrices.push(i++)
         }
-
         stockData.updateMidPrices(updatedData)
-
         const updatedMidPrices = []
         let j = 2
         while (j <= 30) {
           updatedMidPrices.push(j++)
         }
-
         expect(currencyPair.midPrices).to.be.eql([...updatedMidPrices, (updatedData.bestBid + updatedData.bestAsk) / 2])
       })
     })
