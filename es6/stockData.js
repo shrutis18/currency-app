@@ -5,6 +5,7 @@ class StockData {
   }
 
   render (data, table) {
+    console.log('inside render')
     this.currencyPairElement = new CurrencyPairElement(table)
     this.updateCurrencyPairs(data, table)
   }
