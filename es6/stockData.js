@@ -1,4 +1,7 @@
 const CurrencyPairElement = require('./currencyPairElement')
+const Sparkline = require('../site/sparkline')
+const MAX_MID_PRICES_COUNT = 30
+
 class StockData {
   constructor () {
     this.currencyPairs = []
@@ -7,6 +10,7 @@ class StockData {
   render (data, table) {
     this.currencyPairElement = new CurrencyPairElement(table)
     this.updateCurrencyPairs(data, table)
+    this.drawSparkLine(table)
   }
 
   getCurrencyPairByName (name) {
@@ -37,7 +41,7 @@ class StockData {
 
   sortCurrencyPairs () {
     this.currencyPairs.sort((pair1, pair2) => {
-      return (pair1.lastChangeBid >= pair2.lastChangeBid) ? -1 : 1
+      return pair2.lastChangeBid - pair1.lastChangeBid
     })
   }
 
@@ -48,7 +52,7 @@ class StockData {
         currencyPair.midPrices = []
       }
       const newMidPrice = (data.bestAsk + data.bestBid) / 2
-      currencyPair.midPrices = [...(currencyPair.midPrices.slice(-(30 - 1))), newMidPrice]
+      currencyPair.midPrices = [...(currencyPair.midPrices.slice(-(MAX_MID_PRICES_COUNT - 1))), newMidPrice]
     }
   }
 
@@ -58,6 +62,12 @@ class StockData {
 
   calculateAttachingIndexForNewCurrencyPair (currencyPair) {
     return this.currencyPairs.findIndex(pair => pair.lastChangeBid <= currencyPair.lastChangeBid)
+  }
+
+  drawSparkLine () {
+    this.currencyPairs.forEach(function (currencyPair) {
+      Sparkline.draw(document.getElementById('sparkLine_' + currencyPair.name), currencyPair.midPrices, { width: 250 })
+    })
   }
 }
 module.exports = StockData

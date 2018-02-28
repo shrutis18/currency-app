@@ -32,9 +32,6 @@ function connectCallback () {
     if (response.body) {
       let data = JSON.parse(response.body)
       stockData.render(data, renderingElement)
-      stockData.currencyPairs.forEach(function (currencyPair) {
-        Sparkline.draw(this.document.getElementById('sparkLine_' + currencyPair.name), currencyPair.midPrices, { width: 250 })
-      })
     } else renderingElement.innerHTML = '<p>Network Connection lost !!</p>'
   })
 }
