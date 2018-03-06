@@ -30,6 +30,7 @@ client.debug = function (msg) {
 function connectCallback () {
   client.subscribe('/fx/prices', function (response) {
     if (response.body) {
+ //     console.log(response.body)
       let data = JSON.parse(response.body)
       stockData.render(data, renderingElement)
     } else renderingElement.innerHTML = '<p>Network Connection lost !!</p>'

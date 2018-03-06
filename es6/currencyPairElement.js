@@ -6,7 +6,13 @@ class CurrencyPairElement {
   }
 
   removeElement (oldCurrencyPair) {
-    this.table.removeChild(document.getElementById(oldCurrencyPair.name))
+    let table = this.table
+    return new Promise(function (resolve, reject) {
+      let removeRow = document.getElementById(oldCurrencyPair.name)
+      removeRow.setAttribute('class', 'remove-row')
+      setTimeout(function () { table.removeChild(removeRow) }, 0.9)
+      resolve(oldCurrencyPair)
+    })
   }
 
   updateTableRow (data, indexToBeAttachedBefore) {
@@ -17,6 +23,7 @@ class CurrencyPairElement {
   createRow (currencyData) {
     let row = document.createElement('tr')
     row.setAttribute('id', currencyData.name)
+    row.setAttribute('class', 'currency-row')
     row.innerHTML = this.createRowData(currencyData)
     return row
   }

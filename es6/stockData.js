@@ -3,6 +3,7 @@ const Sparkline = require('../site/sparkline')
 const MAX_MID_PRICES_COUNT = 30
 
 class StockData {
+  // let currencyPairs = []
   constructor () {
     this.currencyPairs = []
   }
@@ -13,8 +14,8 @@ class StockData {
     this.drawSparkLine(table)
   }
 
-  getCurrencyPairByName (name) {
-    return this.currencyPairs.filter(pair => pair.name === name)[0]
+  getCurrencyPairByName (name, currencyPairs) {
+    return currencyPairs.filter(pair => pair.name === name)[0]
   }
 
   removeCurrencyPair (data) {
@@ -22,38 +23,63 @@ class StockData {
   }
 
   updateCurrencyPairs (newCurrencyPair) {
-    let oldCurrencyPair = this.getCurrencyPairByName(newCurrencyPair.name)
+    let oldCurrencyPair = this.getCurrencyPairByName(newCurrencyPair.name, this.currencyPairs)
     if (oldCurrencyPair) {
       this.currencyPairs = this.removeCurrencyPair(oldCurrencyPair)
-      this.currencyPairElement.removeElement(oldCurrencyPair)
       newCurrencyPair.midPrices = oldCurrencyPair.midPrices
+      this.currencyPairElement.removeElement(oldCurrencyPair).then(() => {
+        this.attachCurrencyPairToDom(newCurrencyPair).then((newCurrencyPair) => {
+          this.updateMidPrices(newCurrencyPair).then((currencyPairs) => {
+            this.sortCurrencyPairs(currencyPairs)
+          })
+        })
+      })
+    } else {
+      this.attachCurrencyPairToDom(newCurrencyPair).then((newCurrencyPair) => {
+        this.updateMidPrices(newCurrencyPair).then((currencyPairs) => {
+          this.sortCurrencyPairs(currencyPairs)
+        })
+      })
     }
+  }
+
+  updateCurrencyPairAndSort (newCurrencyPair) {
     this.attachCurrencyPairToDom(newCurrencyPair)
-    this.currencyPairs.push(newCurrencyPair)
-    this.updateMidPrices(newCurrencyPair)
-    this.sortCurrencyPairs()
+    this.updateMidPrices(newCurrencyPair, this.sortCurrencyPairs())
   }
 
   attachCurrencyPairToDom (newCurrencyPair) {
-    let indexToBeAttachedBefore = this.calculateAttachingIndexForNewCurrencyPair(newCurrencyPair)
-    this.currencyPairElement.updateTableRow(newCurrencyPair, indexToBeAttachedBefore)
-  }
-
-  sortCurrencyPairs () {
-    this.currencyPairs.sort((pair1, pair2) => {
-      return pair2.lastChangeBid - pair1.lastChangeBid
+    let currencyPairElement = this.currencyPairElement
+    let currencyPairs = this.currencyPairs
+    return new Promise(function (resolve, reject) {
+      let indexToBeAttachedBefore = currencyPairs.findIndex(pair => pair.lastChangeBid <= newCurrencyPair.lastChangeBid)
+      currencyPairElement.updateTableRow(newCurrencyPair, indexToBeAttachedBefore)
+      resolve(newCurrencyPair)
     })
   }
 
-  updateMidPrices (data) {
-    let currencyPair = this.getCurrencyPairByName(data.name)
-    if (currencyPair) {
-      if (!currencyPair.midPrices) {
-        currencyPair.midPrices = []
+  sortCurrencyPairs (currencyPairs) {
+    currencyPairs.sort((pair1, pair2) => {
+      return pair2.lastChangeBid - pair1.lastChangeBid
+    })
+    this.currencyPairs = currencyPairs
+  }
+
+  updateMidPrices (newCurrencyPair) {
+    let currencyPairs = this.currencyPairs
+    // let getCurrencyPairByName = this.getCurrencyPairByName
+    return new Promise(function (resolve, reject) {
+      currencyPairs.push(newCurrencyPair)
+      let currencyPair = newCurrencyPair
+      if (currencyPair) {
+        if (!currencyPair.midPrices) {
+          currencyPair.midPrices = []
+        }
+        const newMidPrice = (newCurrencyPair.bestAsk + newCurrencyPair.bestBid) / 2
+        currencyPair.midPrices = [...(currencyPair.midPrices.slice(-(MAX_MID_PRICES_COUNT - 1))), newMidPrice]
       }
-      const newMidPrice = (data.bestAsk + data.bestBid) / 2
-      currencyPair.midPrices = [...(currencyPair.midPrices.slice(-(MAX_MID_PRICES_COUNT - 1))), newMidPrice]
-    }
+      resolve(currencyPairs)
+    })
   }
 
   isNewCurrencyPair (currencyData) {
